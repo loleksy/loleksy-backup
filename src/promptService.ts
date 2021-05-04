@@ -42,3 +42,18 @@ export async function pickS3Destination() {
 
   return pickedPath;
 }
+
+export async function authorizeOneDrive(url: string): Promise<string> {
+  process.stdout.write(
+    'Visit following url to authorize app and paste below "code" query: \n'
+  );
+  console.log(url);
+
+  const response = await prompts({
+    type: "text",
+    name: "code",
+    message: "Code:",
+  });
+
+  return response.code;
+}

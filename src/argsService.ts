@@ -3,6 +3,7 @@ import yargs from "yargs/yargs";
 export type AppArguments = {
   sourcePath: string;
   destinationPath?: string;
+  authorizeOneDrive: boolean;
 };
 
 export function processArgs(): AppArguments {
@@ -16,6 +17,12 @@ export function processArgs(): AppArguments {
       type: "string",
       demandOption: false,
       description: "Destination path in the Cloud",
+    },
+    authorizeOneDrive: {
+      type: "boolean",
+      demandOption: false,
+      default: false,
+      description: "Request to authorize onedrive",
     },
   }).argv;
 }

@@ -72,14 +72,45 @@ export class FileUploadProgress extends AbstractProgress {
   }
 }
 
+export class MediaOptimizeProgress extends AbstractProgress {
+  private percentage: number = 0;
+  private readonly total: number = 100;
+
+  public fileStarted(): void {
+    this.percentage = 0;
+    this.updateProgress();
+  }
+
+  public update(percentage: number): void {
+    this.percentage = percentage;
+    this.updateProgress();
+  }
+
+  public fileCompleted() {
+    this.percentage = 100;
+    this.updateProgress();
+  }
+
+  private updateProgress() {
+    this.progress.update(this.percentage, {
+      label: this.label,
+      desc: `...`,
+    });
+  }
+}
+
 export class Progress {
   public totalProgress: TotalProgress;
   public rawFileUploadProgress: FileUploadProgress;
+  public mediaOptimizeProgress: MediaOptimizeProgress;
+  public optimizedUploadProgress: FileUploadProgress;
 
   private multibar: MultiBar;
 
-  private readonly totalLabel = pad("Total:", 16);
-  private readonly rawLabel = pad("Upload (raw):", 16);
+  private readonly totalLabel = pad("Total:", 20);
+  private readonly rawLabel = pad("Upload (raw):", 20);
+  private readonly mediaOptimizeLabel = pad("Optimize:", 20);
+  private readonly optimizedLabel = pad("Upload (optimized):", 20);
 
   constructor(totalSize: number) {
     this.multibar = new cliProgress.MultiBar({
@@ -90,6 +121,14 @@ export class Progress {
       this.totalLabel
     );
     this.rawFileUploadProgress = new FileUploadProgress(
+      this.buildProgressBar(this.rawLabel, 1),
+      this.rawLabel
+    );
+    this.mediaOptimizeProgress = new MediaOptimizeProgress(
+      this.buildProgressBar(this.mediaOptimizeLabel, 100),
+      this.mediaOptimizeLabel
+    );
+    this.optimizedUploadProgress = new FileUploadProgress(
       this.buildProgressBar(this.rawLabel, 1),
       this.rawLabel
     );

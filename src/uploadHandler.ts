@@ -2,6 +2,11 @@ import { getTotalSize, getDirectoryFilesPaths } from "./filesystemService";
 import { Progress } from "./Progress";
 import filesize from "filesize";
 import { RawS3Uploader } from "./rawS3Uploader";
+import { MediaOptimizerManager } from "./mediaOptimizerManager";
+import { uploadSimple } from "./oneDriveService";
+import { basename } from "path";
+import { OneDriveUploader } from "./oneDriveUploader";
+import fs from "fs";
 
 const isSourceBlacklisted = (path: string): boolean => {
   if (path.endsWith("/Icon\r") || path.endsWith(".DS_Store")) {
@@ -37,6 +42,12 @@ export async function handle(
   console.log("Starting...");
   const progress = new Progress(size);
   const s3Uploader = new RawS3Uploader(progress.rawFileUploadProgress);
+  const mediaOptimizerManager = new MediaOptimizerManager(
+    progress.mediaOptimizeProgress
+  );
+  const oneDriveUploader = new OneDriveUploader(
+    progress.optimizedUploadProgress
+  );
 
   for (const sourcePath of getSourcePaths(sourceBasePath)) {
     const destinationPath = getFileDestinationPath(
@@ -46,7 +57,19 @@ export async function handle(
     );
     progress.totalProgress.fileStarted(sourcePath);
 
-    await s3Uploader.uploadFile(sourcePath, destinationPath);
+    if (mediaOptimizerManager.isSupported(sourcePath)) {
+      const optimizedPath = `./tmp/${basename(sourcePath)}`;
+
+      await Promise.all([
+        s3Uploader.uploadFile(sourcePath, destinationPath),
+        mediaOptimizerManager.optimize(sourcePath, optimizedPath),
+      ]);
+
+      await oneDriveUploader.uploadFile(optimizedPath, destinationPath);
+      fs.unlinkSync(optimizedPath);
+    } else {
+      await s3Uploader.uploadFile(sourcePath, destinationPath);
+    }
 
     progress.totalProgress.fileCompleted();
   }
