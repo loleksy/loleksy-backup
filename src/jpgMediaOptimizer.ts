@@ -18,7 +18,7 @@ export class JpgMediaOptimizer implements MediaOptimizerInterface {
     await sharp(this.sourcePath)
       .resize(1280)
       .rotate() //autodetect based on exif
-      .jpeg({ mozjpeg: true, quality: 70 })
+      .jpeg({ mozjpeg: true, quality: 75 })
       .toFile(this.getDestinationPath());
 
     await this.setOptimizedMetadata(this.getDestinationPath(), metadata);
