@@ -5,6 +5,7 @@ import { RawS3Uploader } from "./rawS3Uploader";
 import { MediaOptimizerManager } from "./mediaOptimizerManager";
 import { OneDriveUploader } from "./oneDriveUploader";
 import { unlinkSync } from "fs";
+import { isHandled, onFileHandled, onFinished, onStarted } from "./resumeHandler";
 
 const isSourceBlacklisted = (path: string): boolean => {
   if (path.endsWith("/Icon\r") || path.endsWith(".DS_Store")) {
@@ -30,6 +31,20 @@ const getFileDestinationPath = (
     .replace(/^\/+/, "");
 };
 
+async function handleOptimized(
+  mediaOptimizerManager: MediaOptimizerManager,
+  oneDriveUploader: OneDriveUploader,
+  sourcePath: string,
+  destinationPath: string
+): Promise<void> {
+  if (!mediaOptimizerManager.isSupported(sourcePath)) {
+    return;
+  }
+  const optimizedPath = await mediaOptimizerManager.optimize(sourcePath);
+  await oneDriveUploader.uploadFile(optimizedPath, destinationPath);
+  unlinkSync(optimizedPath);
+}
+
 export async function handle(
   sourceBasePath: string,
   destinationBasePath: string
@@ -42,7 +57,7 @@ export async function handle(
   const s3Uploader = new RawS3Uploader(progress.rawFileUploadProgress);
   const mediaOptimizerManager = new MediaOptimizerManager(progress.mediaOptimizeProgress);
   const oneDriveUploader = new OneDriveUploader(progress.optimizedUploadProgress);
-
+  onStarted();
   for (const sourcePath of getSourcePaths(sourceBasePath)) {
     const destinationPath = getFileDestinationPath(
       sourcePath,
@@ -51,22 +66,21 @@ export async function handle(
     );
     progress.totalProgress.fileStarted(sourcePath);
 
-    if (mediaOptimizerManager.isSupported(sourcePath)) {
-      const result = await Promise.all([
-        s3Uploader.uploadFile(sourcePath, destinationPath),
-        mediaOptimizerManager.optimize(sourcePath)
-      ]);
-
-      const optimizedPath = result[1];
-      await oneDriveUploader.uploadFile(optimizedPath, destinationPath);
-
-      unlinkSync(optimizedPath);
-    } else {
-      await s3Uploader.uploadFile(sourcePath, destinationPath);
+    if (isHandled(sourcePath)) {
+      progress.totalProgress.fileCompleted();
+      continue;
     }
 
+    await Promise.all([
+      s3Uploader.uploadFile(sourcePath, destinationPath),
+      handleOptimized(mediaOptimizerManager, oneDriveUploader, sourcePath, destinationPath)
+    ]);
+
     progress.totalProgress.fileCompleted();
+    onFileHandled(sourcePath);
   }
 
   progress.complete();
+  onFinished();
 }
+

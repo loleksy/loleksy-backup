@@ -128,8 +128,8 @@ export class Progress {
       this.mediaOptimizeLabel
     );
     this.optimizedUploadProgress = new FileUploadProgress(
-      this.buildProgressBar(this.rawLabel, 1),
-      this.rawLabel
+      this.buildProgressBar(this.optimizedLabel, 1),
+      this.optimizedLabel
     );
   }
 
