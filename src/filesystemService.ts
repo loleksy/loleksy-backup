@@ -2,6 +2,8 @@ import getFolderSize from "get-folder-size";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
+import { basename } from "path";
+import { OPTIMIZER_TMP_BASE_PATH } from "./config";
 
 export async function getTotalSize(path: string): Promise<number> {
   return promisify(getFolderSize)(path) as Promise<number>;
@@ -24,4 +26,9 @@ export function getDirectoryFilesPaths(directory: string): string[] {
   });
 
   return paths;
+}
+
+export function getOptimizerTmpFilePath(sourcePath: string, targetExtension: string): string {
+  const name = basename(sourcePath).split('.').slice(0, -1).join('.');
+  return `${OPTIMIZER_TMP_BASE_PATH}/${name}.${targetExtension}`;
 }

@@ -8,6 +8,7 @@ import {
 import fs from "fs";
 import { AuthorizationCode } from "simple-oauth2";
 import { authorizeOneDrive } from "./promptService";
+import { getFileSize } from "./filesystemService";
 
 const oneDriveTokenPath = "./.onedrive_auth";
 
@@ -50,8 +51,7 @@ async function getAccessToken(): Promise<string> {
 
   const tokenJson = fs.readFileSync(oneDriveTokenPath).toString();
   let accessToken = authClient.createToken(JSON.parse(tokenJson));
-
-  if (accessToken.expired(30 * 60)) {
+  if (new Date(accessToken.token.expires_at).getTime() < new Date().getTime() + 15 * 60 * 1000) {
     accessToken = await accessToken.refresh();
     fs.writeFileSync(oneDriveTokenPath, JSON.stringify(accessToken));
   }
@@ -85,11 +85,13 @@ async function getUploadParams(
   const filename = pathSegments.pop();
   const parentPath = `${ONEDRIVE_ROOT_DIR}/${pathSegments.join("/")}`;
   const accessToken = await getAccessToken();
+  const fileSize = getFileSize(localPath);
 
   return {
     accessToken,
     parentPath,
     filename,
     readableStream,
+    fileSize
   };
 }

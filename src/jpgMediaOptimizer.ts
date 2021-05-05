@@ -1,15 +1,17 @@
 import sharp from "sharp";
 import piexif from "piexifjs";
 import fs from "fs";
+import { MediaOptimizerInterface } from "./mediaOptimizerInterface";
+import { getOptimizerTmpFilePath } from "./filesystemService";
 
-export class JpgMediaOptimizer {
+export class JpgMediaOptimizer implements MediaOptimizerInterface {
   private sourcePath: string;
 
   constructor(sourcePath: string) {
     this.sourcePath = sourcePath;
   }
 
-  public async optimize(destinationPath: string): Promise<void> {
+  public async optimize(): Promise<void> {
     const image = await sharp(this.sourcePath);
     const metadata = await image.metadata();
 
@@ -17,9 +19,14 @@ export class JpgMediaOptimizer {
       .resize(1280)
       .rotate() //autodetect based on exif
       .jpeg({ mozjpeg: true, quality: 70 })
-      .toFile(destinationPath);
+      .toFile(this.getDestinationPath());
 
-    await this.setOptimizedMetadata(destinationPath, metadata);
+    await this.setOptimizedMetadata(this.getDestinationPath(), metadata);
+  }
+
+  public getDestinationPath(): string
+  {
+    return getOptimizerTmpFilePath(this.sourcePath, 'jpg');
   }
 
   private async setOptimizedMetadata(

@@ -74,7 +74,6 @@ export class FileUploadProgress extends AbstractProgress {
 
 export class MediaOptimizeProgress extends AbstractProgress {
   private percentage: number = 0;
-  private readonly total: number = 100;
 
   public fileStarted(): void {
     this.percentage = 0;
