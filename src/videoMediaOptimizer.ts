@@ -34,7 +34,7 @@ export class VideoMediaOptimizer implements MediaOptimizerInterface {
         reject(err);
       })
       .on('progress', progress => {
-        const completed = ((progress.tasknumber * 100) + progress.percentComplete)/(progress.taskCount * 100)
+        const completed = ((((progress as any).taskNumber - 1) * 100) + progress.percentComplete)/(progress.taskCount * 100);
         this.progressCallback(completed * 100);
       })
       .on('complete', () => {
