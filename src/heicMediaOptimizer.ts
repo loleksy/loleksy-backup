@@ -3,9 +3,8 @@ import fs from "fs";
 import decodeHeic from "heic-decode";
 import { MediaOptimizerInterface } from "./mediaOptimizerInterface";
 import { getOptimizerTmpFilePath } from "./filesystemService";
-import ExifReader from 'exifreader';
+import ExifReader from "exifreader";
 import piexif from "piexifjs"; //todo switch to exifreader completely
-
 
 export class HeicMediaOptimizer implements MediaOptimizerInterface {
   private sourcePath: string;
@@ -21,16 +20,13 @@ export class HeicMediaOptimizer implements MediaOptimizerInterface {
 
     const decodedImageBuffer = Buffer.from(decodedImage.data);
 
-    const image = await sharp(
-      decodedImageBuffer,
-      {
-        raw: {
-          width: decodedImage.width,
-          height: decodedImage.height,
-          channels: 4,
-        },
-      }
-    );
+    const image = await sharp(decodedImageBuffer, {
+      raw: {
+        width: decodedImage.width,
+        height: decodedImage.height,
+        channels: 4,
+      },
+    });
 
     await image
       .resize(1280)
@@ -41,16 +37,13 @@ export class HeicMediaOptimizer implements MediaOptimizerInterface {
     await this.setOptimizedMetadata(this.getDestinationPath());
   }
 
-  public getDestinationPath(): string
-  {
-    return getOptimizerTmpFilePath(this.sourcePath, 'jpg');
+  public getDestinationPath(): string {
+    return getOptimizerTmpFilePath(this.sourcePath, "jpg");
   }
 
-  private async setOptimizedMetadata(
-    destinationPath: string,
-  ): Promise<void> {
+  private async setOptimizedMetadata(destinationPath: string): Promise<void> {
     const tags = await ExifReader.load(this.sourcePath);
-    
+
     const coords = {
       "1": tags.GPSLatitudeRef?.value,
       "2": tags.GPSLatitude?.value,

@@ -51,7 +51,10 @@ async function getAccessToken(): Promise<string> {
 
   const tokenJson = fs.readFileSync(oneDriveTokenPath).toString();
   let accessToken = authClient.createToken(JSON.parse(tokenJson));
-  if (new Date(accessToken.token.expires_at).getTime() < new Date().getTime() + 15 * 60 * 1000) {
+  if (
+    new Date(accessToken.token.expires_at).getTime() <
+    new Date().getTime() + 15 * 60 * 1000
+  ) {
     accessToken = await accessToken.refresh();
     fs.writeFileSync(oneDriveTokenPath, JSON.stringify(accessToken));
   }
@@ -92,6 +95,6 @@ async function getUploadParams(
     parentPath,
     filename,
     readableStream,
-    fileSize
+    fileSize,
   };
 }

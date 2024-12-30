@@ -24,9 +24,8 @@ export class JpgMediaOptimizer implements MediaOptimizerInterface {
     await this.setOptimizedMetadata(this.getDestinationPath(), metadata);
   }
 
-  public getDestinationPath(): string
-  {
-    return getOptimizerTmpFilePath(this.sourcePath, 'jpg');
+  public getDestinationPath(): string {
+    return getOptimizerTmpFilePath(this.sourcePath, "jpg");
   }
 
   private async setOptimizedMetadata(

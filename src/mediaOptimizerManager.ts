@@ -51,15 +51,18 @@ export class MediaOptimizerManager {
   private getOptimizer(sourcePath: string): MediaOptimizerInterface {
     const type = this.getType(sourcePath);
 
-    switch(type) {
+    switch (type) {
       case OptimizeType.Jpg:
         return new JpgMediaOptimizer(sourcePath);
       case OptimizeType.Heic:
         return new HeicMediaOptimizer(sourcePath);
       case OptimizeType.Mp4:
-        return new VideoMediaOptimizer(sourcePath, this.progress.update.bind(this.progress));
+        return new VideoMediaOptimizer(
+          sourcePath,
+          this.progress.update.bind(this.progress)
+        );
       default:
-        throw new Error('unsupported type');
+        throw new Error("unsupported type");
     }
   }
 }

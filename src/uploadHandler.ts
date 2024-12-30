@@ -5,8 +5,13 @@ import { RawS3Uploader } from "./rawS3Uploader";
 import { MediaOptimizerManager } from "./mediaOptimizerManager";
 import { OneDriveUploader } from "./oneDriveUploader";
 import { unlinkSync } from "fs";
-import { isHandled, onFileHandled, onFinished, onStarted } from "./resumeHandler";
-import { dirname, basename, join } from 'path';
+import {
+  isHandled,
+  onFileHandled,
+  onFinished,
+  onStarted,
+} from "./resumeHandler";
+import { dirname, basename, join } from "path";
 
 const isSourceBlacklisted = (path: string): boolean => {
   if (path.endsWith("/Icon\r") || path.endsWith(".DS_Store")) {
@@ -43,7 +48,7 @@ async function handleOptimized(
   }
   const optimizedPath = await mediaOptimizerManager.optimize(sourcePath);
   const oneDrivePath = join(dirname(destinationPath), basename(optimizedPath));
-  
+
   await oneDriveUploader.uploadFile(optimizedPath, oneDrivePath);
 
   unlinkSync(optimizedPath);
@@ -59,8 +64,12 @@ export async function handle(
   console.log("Starting...");
   const progress = new Progress(size);
   const s3Uploader = new RawS3Uploader(progress.rawFileUploadProgress);
-  const mediaOptimizerManager = new MediaOptimizerManager(progress.mediaOptimizeProgress);
-  const oneDriveUploader = new OneDriveUploader(progress.optimizedUploadProgress);
+  const mediaOptimizerManager = new MediaOptimizerManager(
+    progress.mediaOptimizeProgress
+  );
+  const oneDriveUploader = new OneDriveUploader(
+    progress.optimizedUploadProgress
+  );
   onStarted();
   for (const sourcePath of getSourcePaths(sourceBasePath)) {
     const destinationPath = getFileDestinationPath(
@@ -77,7 +86,12 @@ export async function handle(
 
     await Promise.all([
       s3Uploader.uploadFile(sourcePath, destinationPath),
-      handleOptimized(mediaOptimizerManager, oneDriveUploader, sourcePath, destinationPath)
+      handleOptimized(
+        mediaOptimizerManager,
+        oneDriveUploader,
+        sourcePath,
+        destinationPath
+      ),
     ]);
 
     progress.totalProgress.fileCompleted();
@@ -87,4 +101,3 @@ export async function handle(
   progress.complete();
   onFinished();
 }
-

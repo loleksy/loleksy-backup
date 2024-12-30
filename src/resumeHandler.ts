@@ -1,12 +1,12 @@
-import fs from 'fs';
+import fs from "fs";
 
-const stateFilePath = './.files_handled';
+const stateFilePath = "./.files_handled";
 
 let filesHandled: string[] = [];
 
 export function onStarted(): void {
   if (fs.existsSync(stateFilePath)) {
-    filesHandled = JSON.parse(fs.readFileSync(stateFilePath, 'utf-8'));
+    filesHandled = JSON.parse(fs.readFileSync(stateFilePath, "utf-8"));
   }
 }
 
@@ -22,5 +22,3 @@ export function isHandled(sourcePath: string): boolean {
 export function onFinished(): void {
   fs.unlinkSync(stateFilePath);
 }
-
-

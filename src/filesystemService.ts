@@ -28,7 +28,10 @@ export function getDirectoryFilesPaths(directory: string): string[] {
   return paths;
 }
 
-export function getOptimizerTmpFilePath(sourcePath: string, targetExtension: string): string {
-  const name = basename(sourcePath).split('.').slice(0, -1).join('.');
+export function getOptimizerTmpFilePath(
+  sourcePath: string,
+  targetExtension: string
+): string {
+  const name = basename(sourcePath).split(".").slice(0, -1).join(".");
   return `${OPTIMIZER_TMP_BASE_PATH}/${name}.${targetExtension}`;
 }
