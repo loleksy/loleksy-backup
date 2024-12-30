@@ -3,9 +3,11 @@ import { MediaOptimizerInterface } from "./mediaOptimizerInterface";
 import { JpgMediaOptimizer } from "./jpgMediaOptimizer";
 import { MediaOptimizeProgress } from "./Progress";
 import { VideoMediaOptimizer } from "./videoMediaOptimizer";
+import { HeicMediaOptimizer } from "./heicMediaOptimizer";
 
 export enum OptimizeType {
   Jpg = "jpg",
+  Heic = "heic",
   Mp4 = "mp4",
   Unsupported = "unsupported",
 }
@@ -13,6 +15,7 @@ export enum OptimizeType {
 const typeMapping: [string, OptimizeType][] = [
   ["jpg", OptimizeType.Jpg],
   ["jpeg", OptimizeType.Jpg],
+  ["heic", OptimizeType.Heic],
   ["mkv", OptimizeType.Mp4],
   ["mp4", OptimizeType.Mp4],
   ["mov", OptimizeType.Mp4],
@@ -51,6 +54,8 @@ export class MediaOptimizerManager {
     switch(type) {
       case OptimizeType.Jpg:
         return new JpgMediaOptimizer(sourcePath);
+      case OptimizeType.Heic:
+        return new HeicMediaOptimizer(sourcePath);
       case OptimizeType.Mp4:
         return new VideoMediaOptimizer(sourcePath, this.progress.update.bind(this.progress));
       default:

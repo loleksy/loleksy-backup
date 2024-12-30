@@ -6,6 +6,7 @@ import { MediaOptimizerManager } from "./mediaOptimizerManager";
 import { OneDriveUploader } from "./oneDriveUploader";
 import { unlinkSync } from "fs";
 import { isHandled, onFileHandled, onFinished, onStarted } from "./resumeHandler";
+import { dirname, basename, join } from 'path';
 
 const isSourceBlacklisted = (path: string): boolean => {
   if (path.endsWith("/Icon\r") || path.endsWith(".DS_Store")) {
@@ -41,7 +42,10 @@ async function handleOptimized(
     return;
   }
   const optimizedPath = await mediaOptimizerManager.optimize(sourcePath);
-  await oneDriveUploader.uploadFile(optimizedPath, destinationPath);
+  const oneDrivePath = join(dirname(destinationPath), basename(optimizedPath));
+  
+  await oneDriveUploader.uploadFile(optimizedPath, oneDrivePath);
+
   unlinkSync(optimizedPath);
 }
 
